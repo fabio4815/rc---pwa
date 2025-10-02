@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora RC – PWA</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a0f1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+body{margin:0;background:#0a0f1f;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+h1{font-size:1.2rem;margin:8px 0 14px}
+.card{background:#0d1326;border:1px solid #243047;border-radius:12px;padding:14px;margin-bottom:14px}
+label{display:block;font-weight:600;margin:10px 0 6px}
+.row{display:grid;grid-template-columns:1fr 150px;gap:8px}
+input,select,button{padding:12px;border-radius:10px;border:1px solid #243047;background:#091227;color:#e5e7eb;font-size:1rem}
+button.primary{background:linear-gradient(135deg,#22c55e,#16a34a);border:none;color:#05190e;font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:800px){.grid{grid-template-columns:1fr} .row{grid-template-columns:1fr 130px}}
+.item{display:flex;justify-content:space-between;align-items:baseline;border:1px dashed #243047;border-radius:12px;padding:10px;background:#0a1122;margin-top:6px}
+.big{font-size:1.7rem;color:#22c55e;font-weight:900}
+.warn{color:#f59e0b;font-size:.92rem;margin-top:6px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media (max-width:800px){.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Calculadora de Recuperação – RC (PWA offline)</h1>
+<div class="card">
+<label for="litho">Litologia</label>
+<select id="litho" onchange="applyPreset(); computeIfReady();">
+<option value="">— Selecionar —</option>
+<option value="CAF">Canga Ferruginosa (CAF)</option>
+<option value="CAN">Canga Detrítica (CAN)</option>
+<option value="HC">Hematita Compacta (HC)</option>
+<option value="HF">Hematita Friável (HF)</option>
+<option value="HMN">Hematita Manganesífera (HMN)</option>
+<option value="JPF">Jaspilito Friável (JPF)</option>
+<option value="JPC">Jaspilito Compacto (JPC)</option>
+<option value="VULC">Vulcânicas</option>
+</select>
+<label for="rho">Densidade</label>
+<div class="row"><input id="rho" readonly><span>t/m³</span></div>
+
+<label for="diam">Diâmetro do furo</label>
+<div class="row">
+<input id="diam" inputmode="decimal" placeholder="Ex.: 127" oninput="computeIfReady();">
+<select id="diamUnit" onchange="computeIfReady();">
+<option value="mm" selected>mm</option>
+<option value="inch">pol (")</option>
+<option value="m">m</option>
+</select>
+</div>
+
+<label for="len">Comprimento da amostra</label>
+<div class="row">
+<input id="len" inputmode="decimal" placeholder="Ex.: 1" oninput="computeIfReady();">
+<select id="lenUnit" onchange="computeIfReady();">
+<option value="m" selected>m</option>
+<option value="cm">cm</option>
+<option value="ft">pés</option>
+</select>
+</div>
+
+<h3>Pesos das 3 alíquotas</h3>
+<div class="grid3">
+<input id="mass1" inputmode="decimal" placeholder="Alíquota 1" oninput="computeIfReady();">
+<input id="mass2" inputmode="decimal" placeholder="Alíquota 2" oninput="computeIfReady();">
+<input id="mass3" inputmode="decimal" placeholder="Alíquota 3" oninput="computeIfReady();">
+</div>
+<select id="massUnit" onchange="computeIfReady();" style="margin-top:8px">
+<option value="kg" selected>kg</option>
+<option value="t">t</option>
+<option value="g">g</option>
+<option value="lb">lb</option>
+</select>
+
+<div style="margin-top:12px">
+<button class="primary" onclick="computeIfReady(true);">Calcular</button>
+<button onclick="resetAll();">Limpar</button>
+</div>
+<div id="warn" class="warn" style="display:none"></div>
+</div>
+
+<div class="card">
+<h3>Resultados</h3>
+<div class="item"><div>Área da seção (m²)</div><div id="area">—</div></div>
+<div class="item"><div>Volume teórico (m³)</div><div id="vol">—</div></div>
+<div class="item"><div>Massa teórica (kg)</div><div id="mteo">—</div></div>
+<div class="item"><div>Massa recuperada (kg)</div><div id="mrec">—</div></div>
+<div class="item"><div>Recuperação (%)</div><div class="big" id="rec">—</div></div>
+</div>
+</div>
+
+<script>
+const PRESETS={CAF:3.08,CAN:3.01,HC:3.07,HF:3.21,HMN:3.06,JPF:2.93,JPC:3.17,VULC:2.56};
+function applyPreset(){const k=document.getElementById('litho').value;if(PRESETS[k])document.getElementById('rho').value=PRESETS[k];else document.getElementById('rho').value="";}
+function toMeters(x,u){x=+x;if(u==='mm')return x/1000;if(u==='inch')return x*0.0254;if(u==='m')return x;return NaN;}
+function lenToMeters(x,u){x=+x;if(u==='m')return x;if(u==='cm')return x/100;if(u==='ft')return x*0.3048;return NaN;}
+function massToKg(x,u){x=+x;if(u==='kg')return x;if(u==='t')return x*1000;if(u==='g')return x/1000;if(u==='lb')return x*0.45359237;return NaN;}
+function computeIfReady(force){
+const warn=document.getElementById('warn');warn.style.display='none';
+let d=parseFloat((document.getElementById('diam').value||'').replace(',','.'));
+let L=parseFloat((document.getElementById('len').value||'').replace(',','.'));
+let ro=parseFloat(document.getElementById('rho').value);
+let m1=parseFloat((document.getElementById('mass1').value||'').replace(',','.'));
+let m2=parseFloat((document.getElementById('mass2').value||'').replace(',','.'));
+let m3=parseFloat((document.getElementById('mass3').value||'').replace(',','.'));
+let du=document.getElementById('diamUnit').value;let Lu=document.getElementById('lenUnit').value;let mu=document.getElementById('massUnit').value;
+let missing=[];if(!(d>0))missing.push("diâmetro");if(!(L>0))missing.push("comprimento");if(!(ro>0))missing.push("densidade");if(!(m1>0))missing.push("aliq1");if(!(m2>0))missing.push("aliq2");if(!(m3>0))missing.push("aliq3");
+if(missing.length){if(force){warn.textContent="Preencha: "+missing.join(", ");warn.style.display='block';}return;}
+let d_m=toMeters(d,du), L_m=lenToMeters(L,Lu);
+let area=Math.PI*Math.pow(d_m/2,2);let vol=area*L_m;let mteo=vol*(ro*1000);let mrec=massToKg(m1,mu)+massToKg(m2,mu)+massToKg(m3,mu);let rec=(mrec/mteo)*100;
+document.getElementById('area').textContent=area.toFixed(6);document.getElementById('vol').textContent=vol.toFixed(6);document.getElementById('mteo').textContent=mteo.toFixed(2);document.getElementById('mrec').textContent=mrec.toFixed(2);document.getElementById('rec').textContent=rec.toFixed(1)+" %";
+}
+function resetAll(){['litho','rho','diam','len','mass1','mass2','mass3'].forEach(id=>document.getElementById(id).value="");['area','vol','mteo','mrec','rec'].forEach(id=>document.getElementById(id).textContent="—");}
+</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js');});}</script>
+</body>
+</html>
