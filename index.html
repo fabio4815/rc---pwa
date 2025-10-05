@@ -3,79 +3,90 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Calculadora RC – PWA</title>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0a0f1f">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Calculadora RC – Atualizada</title>
 <style>
-  body{margin:0;background:#0a0f1f;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  :root{--bg:#0a0f1f;--card:#0d1326;--ink:#e5e7eb;--muted:#9aa4b2;--line:#243047;--acc:#22c55e}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
   .wrap{max-width:960px;margin:0 auto;padding:16px}
   h1{font-size:1.2rem;margin:8px 0 14px}
-  .card{background:#0d1326;border:1px solid #243047;border-radius:12px;padding:14px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
   label{display:block;font-weight:600;margin:10px 0 6px}
-  .row{display:grid;grid-template-columns:1fr 150px;gap:8px}
-  input,select,button{padding:12px;border-radius:10px;border:1px solid #243047;background:#091227;color:#e5e7eb;font-size:1rem}
-  button.primary{background:linear-gradient(135deg,#22c55e,#16a34a);border:none;color:#05190e;font-weight:800}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:800px){.grid{grid-template-columns:1fr} .row{grid-template-columns:1fr 130px}}
-  .item{display:flex;justify-content:space-between;align-items:baseline;border:1px dashed #243047;border-radius:12px;padding:10px;background:#0a1122;margin-top:6px}
-  .big{font-size:1.7rem;color:#22c55e;font-weight:900}
+  .row{display:grid;grid-template-columns:1fr 180px;gap:8px}
+  input,select,button{padding:12px;border-radius:10px;border:1px solid var(--line);background:#091227;color:var(--ink);font-size:1rem}
+  button.primary{background:linear-gradient(135deg,var(--acc),#16a34a);border:none;color:#05190e;font-weight:800}
+  .item{display:flex;justify-content:space-between;align-items:baseline;border:1px dashed var(--line);border-radius:12px;padding:10px;background:#0a1122;margin-top:6px}
+  .big{font-size:1.7rem;color:var(--acc);font-weight:900}
   .warn{color:#f59e0b;font-size:.92rem;margin-top:6px}
+  .muted{color:var(--muted);font-size:.92rem}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-  @media (max-width:800px){.grid3{grid-template-columns:1fr}}
+  @media (max-width:800px){
+    .row{grid-template-columns:1fr 150px}
+    .grid3{grid-template-columns:1fr}
+  }
+  .litho-info{border:1px dashed var(--line);background:#0a1122;border-radius:10px;padding:8px 10px;line-height:1.25}
+  .l1{font-weight:600}
+  .l2{color:var(--muted);font-size:.92rem}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Calculadora de Recuperação – RC (PWA offline)</h1>
-  <div class="card">
-    <label for="litho">Litologia</label>
-    <select id="litho" onchange="applyPreset(); computeIfReady();">
-      <option value="">— Selecionar —</option>
-      <option value="CAF">Canga Ferruginosa (CAF)</option>
-      <option value="CAN">Canga Detrítica (CAN)</option>
-      <option value="HC_HGOC">Hematita Compacta / Hematita Goethítica Compacta (HC / HGOC)</option>
-      <option value="HF">Hematita Friável (HF)</option>
-      <option value="HMN_HGOF">Hematita Manganesífera / Hematita Goethítica Friável (HMN / HGOF)</option>
-      <option value="JPF">Jaspilito Friável (JPF)</option>
-      <option value="JPC">Jaspilito Compacto (JPC)</option>
-      <option value="MET_INT">Metavulcânicas Intemperizada</option>
-      <option value="MET_FRE">Metavulcânica Fresca</option>
-    </select>
+  <h1>Calculadora de Recuperação – RC</h1>
 
-    <label for="rho">Densidade</label>
+  <div class="card">
+    <label for="litho">Litologia (selecione o código)</label>
     <div class="row">
-      <input id="rho" readonly>
-      <span>t/m³</span>
+      <select id="litho" onchange="applyPreset(); computeIfReady(); updateLithoInfo();">
+        <option value="">— Selecionar —</option>
+        <option value="CAF">CAF</option>
+        <option value="CAN">CAN</option>
+        <option value="HC_HGOC">HC / HGOC</option>
+        <option value="HF">HF</option>
+        <option value="HMN_HGOF">HMN / HGOF</option>
+        <option value="JPF">JPF</option>
+        <option value="JPC">JPC</option>
+        <option value="MET_INT">MET-INT</option>
+        <option value="MET_FRE">MET-FRE</option>
+      </select>
+      <div>
+        <label for="rho">Densidade</label>
+        <div class="row" style="grid-template-columns:1fr 70px">
+          <input id="rho" readonly>
+          <span style="align-self:center">t/m³</span>
+        </div>
+      </div>
+    </div>
+    <div class="litho-info" id="lithoInfo">
+      <div class="l1">—</div>
+      <div class="l2">—</div>
     </div>
 
     <label for="diam">Diâmetro do furo</label>
-    <div class="row">
-      <input id="diam" inputmode="decimal" placeholder="Ex.: 124" oninput="computeIfReady();">
-      <select id="diamUnit" onchange="computeIfReady();">
-        <option value="mm" selected>mm</option>
-        <option value="inch">pol (")</option>
-        <option value="m">m</option>
+    <div class="row" style="grid-template-columns:1fr 120px">
+      <select id="diam" onchange="computeIfReady();">
+        <option value="">— Selecionar —</option>
+        <option>101</option>
+        <option>114</option>
+        <option>121</option>
+        <option>127</option>
+        <option>130</option>
+        <option>136</option>
+        <option>138</option>
+        <option>140</option>
+        <option>146</option>
+        <option>178</option>
       </select>
+      <span style="align-self:center">mm</span>
     </div>
 
-    <label for="len">Comprimento da amostra</label>
-    <div class="row">
-      <input id="len" inputmode="decimal" placeholder="Ex.: 1" oninput="computeIfReady();">
-      <select id="lenUnit" onchange="computeIfReady();">
-        <option value="m" selected>m</option>
-        <option value="cm">cm</option>
-        <option value="ft">pés</option>
-      </select>
+    <div class="muted" style="margin-top:6px">
+      Comprimento da amostra: <b>1,00 m</b> (fixo)
     </div>
 
-    <h3>Pesos das 3 alíquotas</h3>
+    <h3 style="margin-top:14px">Pesos das 3 alíquotas</h3>
     <div class="grid3">
-      <input id="mass1" inputmode="decimal" placeholder="Alíquota 1" oninput="computeIfReady();">
-      <input id="mass2" inputmode="decimal" placeholder="Alíquota 2" oninput="computeIfReady();">
-      <input id="mass3" inputmode="decimal" placeholder="Alíquota 3" oninput="computeIfReady();">
+      <input id="mass1" inputmode="decimal" placeholder="Alíquota 1 (ex.: 9,0)" oninput="computeIfReady();">
+      <input id="mass2" inputmode="decimal" placeholder="Alíquota 2 (ex.: 9,0)" oninput="computeIfReady();">
+      <input id="mass3" inputmode="decimal" placeholder="Alíquota 3 (ex.: 9,0)" oninput="computeIfReady();">
     </div>
     <select id="massUnit" onchange="computeIfReady();" style="margin-top:8px">
       <option value="kg" selected>kg</option>
@@ -115,6 +126,30 @@ const PRESETS = {
   MET_FRE: 2.75
 };
 
+const NAMES = {
+  CAF: ["Canga Ferruginosa", "CAF"],
+  CAN: ["Canga Detrítica", "CAN"],
+  HC_HGOC: ["Hematita Compacta e Hematita Goethítica Compacta", "HC e HGOC"],
+  HF: ["Hematita Friável", "HF"],
+  HMN_HGOF: ["Hematita Manganesífera e Hematita Goethítica Friável", "HMN e HGOF"],
+  JPF: ["Jaspilito Friável", "JPF"],
+  JPC: ["Jaspilito Compacto", "JPC"],
+  MET_INT: ["Metavulcânicas Intemperizada", "MET-INT"],
+  MET_FRE: ["Metavulcânica Fresca", "MET-FRE"]
+};
+
+function updateLithoInfo(){
+  const k = document.getElementById('litho').value;
+  const box = document.getElementById('lithoInfo');
+  if(NAMES[k]){
+    box.querySelector('.l1').textContent = NAMES[k][0];
+    box.querySelector('.l2').textContent = NAMES[k][1] + " • densidade " + PRESETS[k].toFixed(2).replace('.',',') + " t/m³";
+  }else{
+    box.querySelector('.l1').textContent = "—";
+    box.querySelector('.l2').textContent = "—";
+  }
+}
+
 function applyPreset(){
   const k=document.getElementById('litho').value;
   if(PRESETS[k]){
@@ -122,58 +157,69 @@ function applyPreset(){
   } else document.getElementById('rho').value="";
 }
 
-function toMeters(x,u){x=+x;if(u==='mm')return x/1000;if(u==='inch')return x*0.0254;if(u==='m')return x;return NaN;}
-function lenToMeters(x,u){x=+x;if(u==='m')return x;if(u==='cm')return x/100;if(u==='ft')return x*0.3048;return NaN;}
-function massToKg(x,u){x=+x;if(u==='kg')return x;if(u==='t')return x*1000;if(u==='g')return x/1000;if(u==='lb')return x*0.45359237;return NaN;}
+function toMetersFromMM(mm){ return (+mm)/1000; }
+function massToKg(x,u){ x=+x; if(u==='kg')return x; if(u==='t')return x*1000; if(u==='g')return x/1000; if(u==='lb')return x*0.45359237; return NaN; }
 
 function computeIfReady(force){
   const warn=document.getElementById('warn'); warn.style.display='none';
   const get = id => (document.getElementById(id).value||'').replace(',','.');
-  let d=parseFloat(get('diam'));
-  let L=parseFloat(get('len'));
-  let ro=parseFloat(document.getElementById('rho').value);
-  let m1=parseFloat(get('mass1'));
-  let m2=parseFloat(get('mass2'));
-  let m3=parseFloat(get('mass3'));
-  let du=document.getElementById('diamUnit').value;
-  let Lu=document.getElementById('lenUnit').value;
-  let mu=document.getElementById('massUnit').value;
+
+  let dmm = parseFloat(get('diam'));
+  let ro  = parseFloat(document.getElementById('rho').value);
+  let m1  = parseFloat(get('mass1'));
+  let m2  = parseFloat(get('mass2'));
+  let m3  = parseFloat(get('mass3'));
+  let mu  = document.getElementById('massUnit').value;
+
   let missing=[];
-  if(!(d>0))missing.push("diâmetro");
-  if(!(L>0))missing.push("comprimento");
-  if(!(ro>0))missing.push("densidade");
-  if(!(m1>0))missing.push("aliq1");
-  if(!(m2>0))missing.push("aliq2");
-  if(!(m3>0))missing.push("aliq3");
-  if(missing.length){if(force){warn.textContent="Preencha: "+missing.join(", ");warn.style.display='block';} return;}
-  let d_m=toMeters(d,du), L_m=lenToMeters(L,Lu);
-  let area=Math.PI*Math.pow(d_m/2,2);
-  let vol=area*L_m;
-  let mteo=vol*(ro*1000); // ro em t/m³ → kg/m³
-  let mrec=massToKg(m1,mu)+massToKg(m2,mu)+massToKg(m3,mu);
-  let rec=(mrec/mteo)*100;
-  document.getElementById('area').textContent=area.toFixed(6);
-  document.getElementById('vol').textContent=vol.toFixed(6);
-  document.getElementById('mteo').textContent=mteo.toFixed(2);
-  document.getElementById('mrec').textContent=mrec.toFixed(2);
-  document.getElementById('rec').textContent=rec.toFixed(1)+" %";
+  if(!(dmm>0)) missing.push("diâmetro");
+  if(!(ro>0))  missing.push("densidade");
+  if(!(m1>0))  missing.push("aliq1");
+  if(!(m2>0))  missing.push("aliq2");
+  if(!(m3>0))  missing.push("aliq3");
+
+  if(missing.length){
+    if(force){
+      warn.textContent="Preencha: "+missing.join(", ");
+      warn.style.display='block';
+    }
+    setOut('—','—','—','—','—');
+    return;
+  }
+
+  // L = 1 m fixo
+  let d_m = toMetersFromMM(dmm);
+  let L_m = 1.0;
+  let area = Math.PI*Math.pow(d_m/2,2);
+  let vol  = area*L_m;
+  let mteo = vol*(ro*1000);
+  let mrec = massToKg(m1,mu)+massToKg(m2,mu)+massToKg(m3,mu);
+  let rec  = (mrec/mteo)*100;
+
+  setOut(area, vol, mteo, mrec, rec);
+}
+
+function setOut(area, vol, mteo, mrec, rec){
+  const fmt = (x,d=6)=> isFinite(x)? x.toFixed(d) : '—';
+  document.getElementById('area').textContent = fmt(area,6);
+  document.getElementById('vol').textContent  = fmt(vol,6);
+  document.getElementById('mteo').textContent = isFinite(mteo)? mteo.toFixed(2) : '—';
+  document.getElementById('mrec').textContent = isFinite(mrec)? mrec.toFixed(2) : '—';
+  document.getElementById('rec').textContent  = isFinite(rec)? rec.toFixed(1) + " %" : '—';
 }
 
 function resetAll(){
   document.getElementById('litho').value="";
   document.getElementById('rho').value="";
   document.getElementById('diam').value="";
-  document.getElementById('len').value="";
   document.getElementById('mass1').value="";
   document.getElementById('mass2').value="";
   document.getElementById('mass3').value="";
-  document.getElementById('area').textContent="—";
-  document.getElementById('vol').textContent="—";
-  document.getElementById('mteo').textContent="—";
-  document.getElementById('mrec').textContent="—";
-  document.getElementById('rec').textContent="—";
+  updateLithoInfo();
+  setOut('—','—','—','—','—');
 }
+
+(function(){ updateLithoInfo(); })();
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js');});}</script>
 </body>
 </html>
